@@ -1,47 +1,135 @@
-# Svelte + TS + Vite
+# 🛡️ Aurion Vault - Management & Onboarding Client
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+**Aurion Vault** is a standalone Single Page Application (SPA) designed for user onboarding and keyring administration within the **Aurion** ecosystem.
 
-## Recommended IDE Setup
+## 🚀 Technical Stack
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+* **Framework:** [Svelte 5](https://svelte.dev/) (Runes)
+* **Build Tool:** [Vite](https://vitejs.dev/) (Pure SPA Mode)
+* **Language:** TypeScript (Strict Mode)
+* **Cryptography:** [aurion-crypto-sdk](https://www.npmjs.com/package/aurion-crypto-sdk) (OpenPGP ECC / Argon2)
+* **Deployment:** Static Hosting (No Node.js runtime required in production)
 
-## Need an official Svelte framework?
+## 🛠️ Getting Started
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+### Prerequisites
 
-## Technical considerations
+* **Node.js** (v20 or higher)
+* **NPM Access** for the `aurion-crypto-sdk` package.
 
-**Why use this over SvelteKit?**
+### Installation
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+```bash
+# Install dependencies
+npm install
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+# Start development server
+npm run dev
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
-
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
-
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
-
-**Why include `.vscode/extensions.json`?**
-
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
-
-**Why enable `allowJs` in the TS template?**
-
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
-
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
 ```
+
+### Project Structure
+
+```text
+src/
+├── main.ts           # Entry point (Handles config fetching + bootstrapping)
+├── App.svelte        # Manual Router & Global Layout
+├── lib/
+│   ├── config.svelte.ts  # Runtime Config Loader (public/config.json)
+│   ├── api.ts            # SDK Client instance (AurionApiClient)
+│   └── auth.svelte.ts    # Global Cryptographic Session state
+└── components/       # Application Pages (Svelte Components)
+    ├── Onboarding.svelte
+    ├── Dashboard.svelte
+    └── Recovery.svelte
+
+```
+
+## ⚙️ Modular Configuration
+
+To achieve total portability without re-compiling the code for each instance, the application fetches its configuration from a static JSON file at runtime.
+
+### The `config.json` file
+
+Located in `public/config.json` (or at the root of your deployment).
+
+```json
+{
+  "AURION_API_BASE": "https://api.your-aurion-instance.com"
+}
+
+```
+
+### Runtime Logic
+
+1. The `main.ts` script initiates a `fetch('/config.json')`.
+2. Once the URL is retrieved, the `AurionApiClient` is initialized.
+3. The Svelte application is then mounted to the DOM.
+
+
+## 📦 Production & Deployment
+
+### Build
+
+Generate a purely static production bundle in the `dist/` folder:
+
+```bash
+npm run build
+
+```
+
+Here is the updated **Production & Deployment** section for your README, adding the Apache configuration block alongside the Nginx example.
+
+### Static Hosting
+
+Since this is a pure SPA, the `dist/` folder can be served by any web server (Nginx, Apache, S3, etc.).
+
+#### Nginx Configuration (Example)
+
+Ensure all routes are redirected to `index.html` to support client-side routing.
+
+```nginx
+server {
+    listen 80;
+    server_name vault.aurion.internal;
+
+    location / {
+        root /var/www/aurion-vault;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+}
+
+```
+
+#### Apache Configuration (Example)
+
+For Apache, ensure `mod_rewrite` is enabled. You can place this configuration in your virtual host setup or directly inside a `.htaccess` file located at the root of your `dist/` folder.
+
+```apache
+<VirtualHost *:80>
+    ServerName vault.aurion.internal
+    DocumentRoot /var/www/aurion-vault
+
+    <Directory /var/www/aurion-vault>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+
+        # Fallback all traffic to index.html for SPA client-side routing
+        RewriteEngine On
+        RewriteBase /
+        RewriteRule ^index\.html$ - [L]
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule . /index.html [L]
+    </Directory>
+</VirtualHost>
+
+```
+
+### Deployment Checklist
+
+1. Copy the `dist/` content to your server.
+2. Edit `config.json` to point to the correct Aurion API instance.
+3. **Crucial:** Serve the application over **HTTPS** with certbot for example, otherwise, the `WebCrypto API` and SDK will fail.
