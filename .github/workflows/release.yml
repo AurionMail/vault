@@ -1,0 +1,41 @@
+name: Build and Release Vault SPA
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    name: Build SPA Artifact
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm' # Active le cache automatique des dépendances npm
+
+      - name: Install dependencies
+        run: npm ci # Utilise 'npm ci' au lieu de 'npm install' pour un build propre et reproductible en CI
+
+      - name: Build SPA application
+        run: npm run build
+
+      - name: Package build directory
+        # Compresse le dossier 'dist' dans une archive tar.gz
+        run: tar -czvf aurion-vault.tar.gz dist/
+
+      - name: Upload SPA Asset to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: aurion-vault.tar.gz
+          asset_name: aurion-vault.tar.gz
+          tag: ${{ github.ref }}
+          overwrite: true
