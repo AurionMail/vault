@@ -38,7 +38,7 @@
 			
 			// Simulation de la méthode de génération (comme convenu)
 			// 
-			const keyMaterial = await session.generateOnboardingKeys(userPassword);
+			const keyMaterial = await session.generateOnboardingKeys(email,userPassword, salts.salt_client);
 
 			// 3. Calcul de h0 et chiffrement IMAP
 			loadingMessage = 'Calcul de h0 et scellage des credentials IMAP...';
