@@ -29,16 +29,16 @@
 
 			// 1. Récupération des Sels (Nécessaire pour Signup et dérivation)
 			loadingMessage = 'Récupération des sels de sécurité...';
-			const salts = await aurionApi.getSalts(email);
+			const session = new AurionSession(null);
+			const salts = await session.generateSalts();
 
 			// 2. Initialisation Session & Génération de clés (SDK)
 			loadingMessage = 'Génération du Keyring OpenPGP ECC et du Mnemonic...';
-			const session = new AurionSession(null);
+			
 			
 			// Simulation de la méthode de génération (comme convenu)
 			// 
-			const keyMaterial = await AurionSession.generateOnboardingKeys(userPassword);
-			generatedMnemonic = keyMaterial.mnemonic;
+			const keyMaterial = await session.generateOnboardingKeys(userPassword);
 
 			// 3. Calcul de h0 et chiffrement IMAP
 			loadingMessage = 'Calcul de h0 et scellage des credentials IMAP...';

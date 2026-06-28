@@ -19,6 +19,6 @@
     "vite": "^8.1.0"
   },
   "dependencies": {
-    "aurion-crypto-sdk": "^1.0.10"
+    "aurion-crypto-sdk": "^1.0.11"
   }
 }
