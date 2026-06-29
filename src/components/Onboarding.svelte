@@ -9,6 +9,7 @@
 
 	let email = $state('');
 	let imapPassword = $state('');
+	let imapBlob = $state('');
 	let imapConfigMode = $state<'confort' | 'strict'>('strict');
 	let userPassword = $state('');
 
@@ -44,9 +45,11 @@
 			loadingMessage = 'Calcul de h0 et scellage des credentials IMAP...';
 			await session.unlockVault(userPassword, 'Extreme');
 			
-			let imapBlob: string | null = null;
+			
 			if (imapConfigMode === 'confort') {
 				imapBlob = await session.encryptMailCredentials(imapPassword);
+			}else{
+				imapBlob = "";
 			}
 
 			onboardingContext = { session, keyMaterial, salts };
@@ -71,7 +74,8 @@
 				userPassword, // Devrait être dérivé de h0
 				imapPassword, // Le mdp IMAP non chiffré car juste vérification côté serveur
 				salts.salt_server,
-				salts.salt_client
+				salts.salt_client,
+				imapBlob
 			);
 
 			// Injection du token Bearer dans le client API
