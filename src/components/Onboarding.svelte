@@ -73,9 +73,9 @@
 				email,
 				userPassword, // Devrait être dérivé de h0
 				imapPassword, // Le mdp IMAP non chiffré car juste vérification côté serveur
+				imapBlob,
 				salts.salt_server,
 				salts.salt_client,
-				imapBlob
 			);
 
 			// Injection du token Bearer dans le client API
